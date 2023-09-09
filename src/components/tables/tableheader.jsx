@@ -38,6 +38,21 @@ export const category_columns = ({ onDeleteOpen, handleDrawer }) => [
     },
   },
   {
+    Header: "Status",
+    accessor: "category_status",
+    Cell: (cell) => {
+      const cellId = cell.row.original.category_id;
+      const status = cell.row.original.category_status;
+      return (
+        <>
+          {
+            status ? 'Active' : 'Inactive'
+          }
+        </>
+      );
+    },
+  },
+  {
     Header: "Action",
     accessor: "action",
     Cell: (cell) => {

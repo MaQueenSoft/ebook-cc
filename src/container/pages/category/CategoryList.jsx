@@ -39,6 +39,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModeEditOutlinedIcon from '@mui/icons-material/ModeEditOutlined';
+import { Switch } from "@headlessui/react";
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
 
 function CategoryList() {
 
@@ -49,7 +54,7 @@ function CategoryList() {
     category_logo: "",
     category_logo_path: "",
     category_banner_path: "",
-    category_status: 1,
+    category_status: false
   };
 
   const pages = [{ title: "Category List", href: "/category" }];
@@ -64,6 +69,7 @@ function CategoryList() {
   let [formCategory, setFormCategory] = useState(initialValues)
   const [categoryList, setCategoryList] = useState([])
   const [isLoading, setLoader] = useState(false)
+  const [enabled, setEnabled] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,12 +83,11 @@ function CategoryList() {
       const initialValues = {
         category_id: obj.category_id,
         category_name: obj.category_name,
-        // category_banner: obj.category_banner,
-        // category_logo: obj.category_logo,
         category_logo_path: obj.category_logo_path,
         category_banner_path: obj.category_banner_path,
         category_status: obj.category_status,
       };
+      setEnabled(obj.category_status);
       setFormCategory(initialValues);
     } else {
       setCategoryId("")
@@ -94,8 +99,8 @@ function CategoryList() {
   };
 
   const getAllCategory = async () => {
-    setCategoryList([]);
-    let querySnapshot = await getAllMaster({ tableName: "categories" });
+    //setCategoryList([]);
+    let querySnapshot = await getAllMaster({ tableName: "ebook_categories" });
     if (querySnapshot.length > 0) {
       setCategoryList(querySnapshot);
       setLoading(false);
@@ -105,7 +110,7 @@ function CategoryList() {
   const onDeleteOpen = async (category_id) => {
     let result = await confirmationLib({ Type: "Delete" });
     if (result.isConfirmed) {
-      await removeMaster({ tableName: "categories", pk_Id: category_id });
+      await removeMaster({ tableName: "ebook_categories", pk_Id: category_id });
       getAllCategory();
     }
   };
@@ -135,7 +140,7 @@ function CategoryList() {
           category_logo: categoryLogo?.name ? categoryLogo?.name : null,
           category_logo_path: values.category_logo_path,
           category_banner_path: values.category_banner_path,
-          category_status: values.category_status,
+          category_status: enabled,
         }
 
         let document_id = new Date().getTime();
@@ -176,6 +181,7 @@ function CategoryList() {
         } else {
           body.category_banner = body.category_banner_path ? body.category_banner_path : body.category_banner;
           body.category_logo = body.category_logo_path ? body.category_logo_path : body.category_logo;
+          body.category_status = enabled;
           body.document_id = category_id ? category_id.toString() : document_id.toString();
           body.category_id = category_id ? category_id.toString() : document_id.toString();
           body.updated_date = new Date().toLocaleString() + "";
@@ -190,13 +196,14 @@ function CategoryList() {
           setLoader(false);
         };
 
+        getAllCategory();
         navigate("/category");
       }
     });
 
   const saveCategory = async (body) => {
     let docRef = await insertMaster({
-      tableName: "categories",
+      tableName: "ebook_categories",
       tableItem: body,
     });
   };
@@ -455,6 +462,40 @@ function CategoryList() {
                                 </div>
                               </div>
                             </div>
+
+
+
+                            <div className="flex flex-1 flex-col justify-between">
+                              <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                                <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                    <Switch.Group as="div" className="flex items-center mt-3">
+                                        <Switch
+                                            checked={enabled}
+                                            onChange={(e) => setEnabled(!enabled)}
+                                            className={classNames(
+                                              enabled ? 'bg-indigo-600' : 'bg-gray-200',
+                                            'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2'
+                                            )}
+                                        >
+                                            <span
+                                            aria-hidden="true"
+                                            className={classNames(
+                                              enabled ? 'translate-x-5' : 'translate-x-0',
+                                                'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out'
+                                            )}
+                                            />
+                                        </Switch>
+                                        <Switch.Label as="span" className="ml-3 text-sm">
+                                            <span className="font-small text-gray-500">Enable / Disable</span>
+                                        </Switch.Label>
+                                    </Switch.Group>
+                                  </div>
+                                </div>
+                            </div>
+
+
+
+
                           </div>
                         </div>
                         <div className="flex flex-shrink-0 justify-end px-4 py-4">
@@ -463,12 +504,12 @@ function CategoryList() {
                             className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             onClick={() => {
                               setmodalOpenFlage(false)
-                            }
-                            }
+                            }}
                           >
                             Cancel
                           </button>
                           <button
+                            type="submit"
                             className="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                           >
                             {category_id ? 'Update' : 'Add'}

@@ -28,27 +28,6 @@ export const categorySchema = Yup.object({
     }
     return true;
   }),
-  // category_logo_path: Yup.string(),
-  // category_logo: Yup.mixed().when('category_logo_path', {
-  //   is: (val) => !!val, // Check if category_logo_path has a value
-  //   then: Yup.mixed().test('custom-validation', 'Custom validation failed', function (value) {
-  //     console.log('category_logo =>', value); // Log the value of category_logo
-  //     // Add your custom validation logic here
-  //     return true; // Return true to indicate successful validation
-  //   }),
-  //   otherwise: Yup.mixed().notRequired(), // No validation if category_logo_path is not chosen
-  // }),
-
-  // category_banner_path: Yup.string(),
-  // category_banner: Yup.mixed().when('category_banner_path', {
-  //   is: (val) => !!val, // Check if category_banner_path has a value
-  //   then: Yup.mixed().test('custom-validation', 'Custom validation failed', function (value) {
-  //     console.log('category_banner =>', value); // Log the value of category_banner
-  //     // Add your custom validation logic here
-  //     return true; // Return true to indicate successful validation
-  //   }),
-  //   otherwise: Yup.mixed().notRequired(), // No validation if category_banner_path is not chosen
-  // }),
 
 });
 
