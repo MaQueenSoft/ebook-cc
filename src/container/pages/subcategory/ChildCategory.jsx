@@ -1,16 +1,21 @@
-import React, { useEffect, useState, Fragment } from "react";
-import { Link, useNavigate } from "react-router-dom";   
-import { useFormik } from "formik";
-import { categorySchema } from "../../../schemas";
+import React, { useEffect } from 'react'
+import { Fragment } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import Loading from "react-fullscreen-loading";
+import { useState } from 'react';
+import Breadcrumb from "../../../components/Breadcrumb";
+import { sub_categorySchema } from "../../../schemas";
+import { uploadFile } from "../../../helper/UploadLib";
 import Table from "../../../components/tables/table";
-import { category_columns } from "../../../components/tables/tableheader";
+import { sub_category_columns } from "../../../components/tables/tableheader";
 import { ChevronLeftIcon, ChevronRightIcon, TableCellsIcon, Squares2X2Icon, TrashIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
 import { Dialog, Transition } from "@headlessui/react";
-import { FallingLinesLoader } from "../../../components/spinners/Spinner";
-import Breadcrumb from "../../../components/Breadcrumb";
+import moment from "moment";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { uploadFile } from "../../../helper/UploadLib";
-import { confirmationLib } from "../../../helper/CommonLib";  
+import { Switch } from "@headlessui/react";
+import { FallingLinesLoader } from "../../../components/spinners/Spinner";
+import { useFormik } from "formik";
+import { confirmationLib } from "../../../helper/CommonLib";
 import {
   insertMaster,
   updateMaster,
@@ -19,84 +24,80 @@ import {
   getAllMaster,
 } from "../../../helper/QueryLib";
 import { Box, Grid, Paper } from "@mui/material";
-import moment from "moment";
-import Loading from "react-fullscreen-loading";
-//import { Grid } from "react-loader-spinner";
-
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
-import Collapse from '@mui/material/Collapse';
 import Avatar from '@mui/material/Avatar';
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import { green, red, grey } from '@mui/material/colors';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import ModeEditOutlinedIcon from '@mui/icons-material/ModeEditOutlined';
-import { Switch } from "@headlessui/react";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-function CategoryList() {
+function ChildCategory() {
 
   const initialValues = {
-    category_id: "",
-    category_name: "",
-    category_banner: "",
-    category_logo: "",
-    category_logo_path: "",
-    category_banner_path: "",
-    category_status: false
+    fk_cat_id: "",
+    subcategory_id: "",
+    sub_category_name: "",
+    sub_category_banner: "",
+    sub_category_logo: "",
+    sub_category_logo_path: "",
+    sub_category_banner_path: "",
+    sub_category_status: false
   };
 
-  const pages = [{ title: "Category List", href: "/category" }];
-  const [isTable, setTable] = useState(true);
-  const [modalOpenFlage, setmodalOpenFlage] = useState(false);
-  const [loading, setLoading] = useState(true)
-  const [category_id, setCategoryId] = useState('')
-  const [categoryBase64Icon, setCategoryBase64Icon] = useState(null)
-  const [categoryBase64Banner, setCategoryBase64Banner] = useState(null)
-  const [categoryLogo, setCategoryLogo] = useState(null)
-  const [categoryBanner, setCategoryBanner] = useState(null)
-  let [formCategory, setFormCategory] = useState(initialValues)
+  const [isLoading, setLoader] = useState(false);
+  const [SubcategoryList, setSubCategoryList] = useState([])
   const [categoryList, setCategoryList] = useState([])
-  const [isLoading, setLoader] = useState(false)
-  const [enabled, setEnabled] = useState(true);
+  const [isTable, setTable] = useState(true);
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
+  const [modalOpenFlage, setmodalOpenFlage] = useState(false);
+  const [subcategory_id, setCategoryId] = useState('');
+  let [formCategory, setFormCategory] = useState(initialValues);
+  const [categoryLogo, setCategoryLogo] = useState(null)
+  const [categoryBase64Icon, setCategoryBase64Icon] = useState(null)
   const [tempLogo,setTempLogo] = useState(null);
   const [tempBanner,setTempBanner]=useState(null);
-
+  const [categoryBase64Banner, setCategoryBase64Banner] = useState(null)  
+  const [categoryBanner, setCategoryBanner] = useState(null)
+  const [enabled, setEnabled] = useState(true);
+  
   useEffect(() => {
     document.title = "Starter-Pack | Category";
+    getAllSubCategory();
     getAllCategory();
   }, []);
 
+  const abc = 10;
+
+
+  const pages = [{ title: "SubCategory List", href: "/subCategory" }];
+
   const handleDrawer = (type, id, obj) => {
-    if (type === "edit", id) {
+    if (type === "edit") {
       setCategoryId(id);
       const initialValues = {
-        category_id: obj.category_id,
-        category_name: obj.category_name,
-        category_logo_path: obj.category_logo_path,
-        category_banner_path: obj.category_banner_path,
-        category_status: obj.category_status,
+        subcategory_id: obj.subcategory_id,
+        sub_category_name: obj.sub_category_name,
+        sub_category_logo_path: obj.sub_category_logo_path,
+        sub_category_banner_path: obj.sub_category_banner_path,
+        sub_category_status: obj.sub_category_status,
+        fk_cat_id:obj.fk_cat_id
       };
-      setTempLogo(obj.category_logo_path);
-      setTempBanner(obj.category_banner_path);
-      setEnabled(obj.category_status);
       setFormCategory(initialValues);
+      setTempLogo(obj.sub_category_logo_path);
+      setTempBanner(obj.sub_category_banner_path);
     } else {
-      setCategoryId("");
+      setCategoryId(null)
       setTempLogo(null);
+      setTempBanner(null);
       setFormCategory(initialValues);
     }
     if (modalOpenFlage === false) {
@@ -105,7 +106,6 @@ function CategoryList() {
   };
 
   const getAllCategory = async () => {
-    //setCategoryList([]);
     let querySnapshot = await getAllMaster({ tableName: "ebook_categories" });
     if (querySnapshot.length > 0) {
       setCategoryList(querySnapshot);
@@ -113,11 +113,20 @@ function CategoryList() {
     }
   };
 
-  const onDeleteOpen = async (category_id) => {
+  const getAllSubCategory = async () => {
+    //setSubCategoryList([]);
+    let querySnapshot = await getAllMaster({ tableName: "ebook_subcategory" });
+    if (querySnapshot.length > 0) {
+      setSubCategoryList(querySnapshot);
+      setLoading(false);
+    }
+  };
+
+  const onDeleteOpen = async (subcategory_id) => {
     let result = await confirmationLib({ Type: "Delete" });
     if (result.isConfirmed) {
-      await removeMaster({ tableName: "ebook_categories", pk_Id: category_id });
-      getAllCategory();
+      await removeMaster({ tableName: "ebook_subcategory", pk_Id: subcategory_id });
+      getAllSubCategory();
     }
   };
 
@@ -130,90 +139,89 @@ function CategoryList() {
       return "Not Available";
     }
   }
-
-  const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
-    useFormik({
-      enableReinitialize: true,
-      initialValues: formCategory,
-      validationSchema: categorySchema,
-      onSubmit: async (values, action) => {
-
-        setLoader(true);
-
-        let body = {
-          category_name: values.category_name,
-          category_banner: categoryBanner?.name ? categoryBanner?.name : null,
-          category_logo: categoryLogo?.name ? categoryLogo?.name : null,
-          category_logo_path: values.category_logo_path,
-          category_banner_path: values.category_banner_path,
-          category_status: enabled,
-        }
-
-        let document_id = new Date().getTime();
-
-        if (!category_id || categoryLogo || categoryBanner) {
-          let logoStorageRef;
-          let bannerStorageRef;
-          if (categoryLogo) {
-
-            const logoParts = categoryLogo.name.split('.');
-            const lastLogoExtension = logoParts[logoParts.length - 1];
-            let LogoImageName = document_id + "_logo." + lastLogoExtension;
-            logoStorageRef = await uploadFile({
-              folderName: "category",
-              imageName: LogoImageName,
-              urlName: categoryBase64Icon,
-            });
-            body.category_logo_path = logoStorageRef ? logoStorageRef : null;
-          }
-          if (categoryBanner) {
-            const bannerParts = categoryBanner.name.split('.');
-            const lastbannerExtension = bannerParts[bannerParts.length - 1];
-            let BannerImageName = document_id + "_banner." + lastbannerExtension;
-            bannerStorageRef = await uploadFile({
-              folderName: "category",
-              imageName: BannerImageName,
-              urlName: categoryBase64Banner,
-            });
-            body.category_banner_path = bannerStorageRef ? bannerStorageRef : null;
-          }
-        }
-
-        if (category_id === undefined || category_id === null || category_id === "") {
-          body.document_id = document_id.toString();
-          body.category_id = document_id.toString();
-          body.created_date = new Date().toLocaleString() + "";
-          saveCategory(body);
-        } else {
-          body.category_banner = body.category_banner_path ? body.category_banner_path : body.category_banner;
-          body.category_logo = body.category_logo_path ? body.category_logo_path : body.category_logo;
-          body.category_status = enabled;
-          body.document_id = category_id ? category_id.toString() : document_id.toString();
-          body.category_id = category_id ? category_id.toString() : document_id.toString();
-          body.updated_date = new Date().toLocaleString() + "";
-          saveCategory(body);
-        }
-
-        action.resetForm();
-
-        if (modalOpenFlage === true) {
-          getAllCategory();
-          setmodalOpenFlage(false);
-          setLoader(false);
-        };
-
-        getAllCategory();
-        navigate("/category");
-      }
-    });
-
   const saveCategory = async (body) => {
     let docRef = await insertMaster({
-      tableName: "ebook_categories",
+      tableName: "ebook_subcategory",
       tableItem: body,
     });
   };
 
+  const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
+  useFormik({
+    enableReinitialize: true,
+    initialValues: formCategory,
+    validationSchema: sub_categorySchema,
+    onSubmit: async (values, action) => {
+
+      setLoader(true);
+
+      let body = {
+        sub_category_name: values.sub_category_name,
+        sub_category_banner: categoryBanner?.name ? categoryBanner?.name : null,
+        sub_category_logo: categoryLogo?.name ? categoryLogo?.name : null,
+        sub_category_logo_path: values.sub_category_logo_path,
+        sub_category_banner_path: values.sub_category_banner_path,
+        sub_category_status: enabled,
+        fk_cat_id:values.fk_cat_id,
+      }
+
+      let document_id = new Date().getTime();
+
+      if (!subcategory_id || categoryLogo || categoryBanner) {
+        let logoStorageRef;
+        let bannerStorageRef;
+        if (categoryLogo) {
+
+          const logoParts = categoryLogo.name.split('.');
+          const lastLogoExtension = logoParts[logoParts.length - 1];
+          let LogoImageName = document_id + "_logo." + lastLogoExtension;
+          logoStorageRef = await uploadFile({
+            folderName: "subCategory",
+            imageName: LogoImageName,
+            urlName: categoryBase64Icon,
+          });
+          body.sub_category_logo_path = logoStorageRef ? logoStorageRef : null;
+        }
+        if (categoryBanner) {
+          const bannerParts = categoryBanner.name.split('.');
+          const lastbannerExtension = bannerParts[bannerParts.length - 1];
+          let BannerImageName = document_id + "_banner." + lastbannerExtension;
+          bannerStorageRef = await uploadFile({
+            folderName: "subCategory",
+            imageName: BannerImageName,
+            urlName: categoryBase64Banner,
+          });
+          body.sub_category_banner_path = bannerStorageRef ? bannerStorageRef : null;
+        }
+      }
+
+      if (subcategory_id === undefined || subcategory_id === null || subcategory_id === "") {
+        body.document_id = document_id.toString();
+        body.subcategory_id = document_id.toString();
+        body.created_date = new Date().toLocaleString() + "";
+        saveCategory(body);
+      } else {
+        body.sub_category_banner = body.sub_category_banner_path ? body.sub_category_banner_path : body.sub_category_banner;
+        body.sub_category_logo = body.sub_category_logo_path ? body.sub_category_logo_path : body.sub_category_logo;
+        body.sub_category_status = enabled;
+        body.document_id = subcategory_id ? subcategory_id.toString() : document_id.toString();
+        body.subcategory_id = subcategory_id ? subcategory_id.toString() : document_id.toString();
+        body.updated_date = new Date().toLocaleString() + "";
+        saveCategory(body);
+      }
+
+      action.resetForm();
+
+      if (modalOpenFlage === true) {
+        getAllSubCategory();
+        setmodalOpenFlage(false);
+        setLoader(false);
+      };
+
+      getAllSubCategory();
+      navigate("/subCategory");
+    }
+  });
   const onFileChange = (e, type) => {
     const file = e.target.files[0];
     const fileName = file.name;
@@ -238,14 +246,16 @@ function CategoryList() {
 
   };
 
-  return (
-    <div className="main-section">
 
+  return (
+   
+    <div className="main-section">
       <Loading className='backdrop-blur-md' loading={isLoading} background="#383838c9" loaderColor="#ffffff" />
       <Breadcrumb pages={pages} />
 
+      {/* List View Icons */}
       <div className="table-title flex space-x-3">
-        <h5 className="text-xl font-semibold text-gray-900 mt-1">Category List ({categoryList.length})</h5>
+        <h5 className="text-xl font-semibold text-gray-900 mt-1">Sub-Category List ({SubcategoryList.length})</h5>
 
         <span className="isolate inline-flex rounded-md shadow-sm">
           <button
@@ -267,20 +277,16 @@ function CategoryList() {
         </span>
       </div>
 
+      {/* Add Button */}
       <div className="mt-4 flex">
         <Link
           onClick={() => handleDrawer("add", "", {})}
           type="button"
           className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ml-auto"
         >
-          Add Category
+          Add Sub-Category
         </Link>
       </div>
-
-      {/* <Table
-            columns={category_columns({ onDeleteOpen, handleDrawer })}
-            data={categoryList}
-          /> */}
 
       {
         loading ? (
@@ -290,35 +296,35 @@ function CategoryList() {
             {
               isTable ? (
                 <Table
-                  columns={category_columns({ onDeleteOpen, handleDrawer })}
-                  data={categoryList}
+                  columns={sub_category_columns({ onDeleteOpen, handleDrawer })}
+                  data={SubcategoryList}
                 />
               ) : (
                 <Box className='mt-1 p-3'>
                   <Grid container spacing={{ xs: 3 }}>
                     {
-                      categoryList.map((data, index) => (
+                      SubcategoryList.map((data, index) => (
                         <Grid key={index} item lg={3} md={3} sm={12} xs={12}>
                             <Box className='mt-0'>
                               <Card sx={{ maxWidth: 345 }} className="rounded-lg">
                                 <CardHeader
                                   avatar={
-                                    <Avatar className="shadow-sm" sx={{ bgcolor: grey[300] }} aria-label={data?.category_name} src={data?.category_logo_path} />
+                                    <Avatar className="shadow-sm" sx={{ bgcolor: grey[300] }} aria-label={data?.sub_category_name} src={data?.sub_category_logo_path} />
                                   }
-                                  title={data?.category_name}
+                                  title={data?.sub_category_name}
                                   subheader={dateFormat(data)}
                                 />
                                 <CardMedia
                                   component="img"
                                   height="194"
-                                  image={data?.category_banner_path}
-                                  alt={data?.category_name}
+                                  image={data?.sub_category_banner_path}
+                                  alt={data?.sub_category_name}
                                 />
                                 <CardActions >
-                                  <IconButton aria-label="Edit Category" onClick={() => handleDrawer("edit", data?.category_id, data)}>
+                                  <IconButton aria-label="Edit Category" onClick={() => handleDrawer("edit", data?.subcategory_id, data)}>
                                     <ModeEditOutlinedIcon />
                                   </IconButton>
-                                  <IconButton aria-label="Delete Category" onClick={() => {onDeleteOpen(data?.category_id)}}>
+                                  <IconButton aria-label="Delete Category" onClick={() => {onDeleteOpen(data?.subcategory_id)}}>
                                     <DeleteIcon />
                                   </IconButton>
                                 </CardActions>
@@ -335,6 +341,7 @@ function CategoryList() {
         )
       }
 
+      {/* Add/Edit form  */}
       <div className="form-layout">
         <Transition.Root show={modalOpenFlage} as={Fragment}>
           <Dialog
@@ -361,7 +368,7 @@ function CategoryList() {
                           <div className="bg-indigo-700 py-6 px-4 sm:px-6">
                             <div className="flex items-center justify-between">
                               <Dialog.Title className="text-lg font-medium text-white">
-                                {category_id ? "Update" : "Add"} Category
+                                {subcategory_id ? "Update" : "Add"} Category
                               </Dialog.Title>
                               <div className="ml-3 flex h-7 items-center">
                                 <button
@@ -378,6 +385,46 @@ function CategoryList() {
                               </div>
                             </div>
                           </div>
+                          
+                          {/* category dropdown */}
+
+                          <div className="flex flex-1 flex-col justify-between">
+                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                              <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <div>
+                                  <label
+                                    htmlFor="project-name"
+                                    className="block text-sm font-medium text-gray-900"
+                                  >
+                                    Category
+                                  </label>
+                                </div>
+                                <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                  <select
+                                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
+                                    name="fk_cat_id"
+                                    id="fk_cat_id"
+                                    value={values.fk_cat_id}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                  >
+                                    <option> Select Category </option>
+                                    {categoryList?.length > 0 ? (categoryList?.map((category, i) => (
+                                      <option selected={category.category_id === values.fk_cat_id ? "selected" : ""} key={i} value={category.category_id}>
+                                        {category.category_name}
+                                      </option>
+                                    ))) : null}
+                                  </select>
+
+                                  {errors.fk_cat_id && touched.fk_cat_id ? (
+                                    <div className="text-sm text-red-600">{errors.fk_cat_id}</div>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Category Name */}
                           <div className="flex flex-1 flex-col justify-between">
                             <div className="divide-y divide-gray-200 px-4 sm:px-6">
                               <div className="mt-1 sm:col-span-2 sm:mt-0">
@@ -391,17 +438,17 @@ function CategoryList() {
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.category_name}
+                                    value={values.sub_category_name}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     type="text"
                                     placeholder="Enter Category Name"
-                                    name="category_name"
+                                    name="sub_category_name"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.category_name && touched.category_name ? (
-                                    <p className="text-red-600 text-sm">{errors.category_name}</p>
+                                  {errors.sub_category_name && touched.sub_category_name ? (
+                                    <p className="text-red-600 text-sm">{errors.sub_category_name}</p>
                                   ) : null}
                                 </div>
                               </div>
@@ -420,7 +467,7 @@ function CategoryList() {
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.category_logo}
+                                    value={values.sub_category_logo}
                                     onChange={(e) => {
                                       handleChange(e)
                                       onFileChange(e, 'category_logo')
@@ -428,12 +475,12 @@ function CategoryList() {
                                     onBlur={handleBlur}
                                     type="file"
                                     placeholder="Enter Category Logo"
-                                    name="category_logo"
+                                    name="sub_category_logo"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.category_logo && touched.category_logo ? (
-                                    <p className="text-red-600 text-sm">{errors.category_logo}</p>
+                                  {errors.sub_category_logo && touched.sub_category_logo ? (
+                                    <p className="text-red-600 text-sm">{errors.sub_category_logo}</p>
                                   ) : null}
                                 </div>
                                 <div className="col-span-full">
@@ -458,7 +505,7 @@ function CategoryList() {
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.category_banner}
+                                    value={values.sub_category_banner}
                                     onChange={(e) => {
                                       handleChange(e)
                                       onFileChange(e, 'category_banner')
@@ -466,12 +513,12 @@ function CategoryList() {
                                     onBlur={handleBlur}
                                     type="file"
                                     placeholder="Enter Category Banner"
-                                    name="category_banner"
+                                    name="sub_category_banner"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.category_banner && touched.category_banner ? (
-                                    <p className="text-red-600 text-sm">{errors.category_banner}</p>
+                                  {errors.sub_category_banner && touched.sub_category_banner ? (
+                                    <p className="text-red-600 text-sm">{errors.sub_category_banner}</p>
                                   ) : null}
                                 </div>
                                 <div className="col-span-full">
@@ -532,7 +579,7 @@ function CategoryList() {
                             type="submit"
                             className="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                           >
-                            {category_id ? 'Update' : 'Add'}
+                            {subcategory_id ? 'Update' : 'Add'}
                           </button>
                         </div>
                       </form>
@@ -544,7 +591,11 @@ function CategoryList() {
           </Dialog>
         </Transition.Root>
       </div>
+
+
     </div>
-  );
+
+  )
 }
-export default CategoryList;
+
+export default ChildCategory;

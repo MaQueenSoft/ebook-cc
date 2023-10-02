@@ -1,5 +1,6 @@
 import * as Yup from "yup";
 const moment = require("moment");
+
 export const categorySchema = Yup.object({
 
   category_name: Yup.string()
@@ -31,11 +32,39 @@ export const categorySchema = Yup.object({
 
 });
 
-export const gameSchema = Yup.object({
-  fk_cat_id: Yup.string()
+export const sub_categorySchema = Yup.object({
+  fk_cat_id: Yup.string().min(2).max(225).required("Please Enter the Category"),
+  sub_category_name: Yup.string()
     .min(2)
     .max(225)
-    .required("Please Enter the Category"),
+    .required("Please Enter the Category Name"),
+
+  sub_category_logo: Yup.mixed().test('categoryLogo', 'Please Choose a Category Logo', function (value) {
+    const categoryLogoPath = this.resolve(Yup.ref('sub_category_logo_path')); // Replace with actual path field name
+    if (!categoryLogoPath && !value) {
+      return this.createError({
+        message: 'Category Logo is required',
+        path: 'sub_category_logo',
+      });
+    }
+    return true;
+  }),
+
+  sub_category_banner: Yup.mixed().test('categoryBanner', 'Please Choose a Category Banner', function (value) {
+    const categoryBannerPath = this.resolve(Yup.ref('sub_category_banner_path')); // Replace with actual path field name
+    if (!categoryBannerPath && !value) {
+      return this.createError({
+        message: 'Category Banner is required',
+        path: 'sub_category_banner',
+      });
+    }
+    return true;
+  }),
+
+});
+
+export const gameSchema = Yup.object({
+  fk_cat_id: Yup.string().min(2).max(225).required("Please Enter the Category"),
   game_name: Yup.string()
     .min(2)
     .max(225)

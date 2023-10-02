@@ -37,6 +37,7 @@ import {
 const Menus = [
   { name: "Dashboard", href: "/", icon: UsersIcon, current: true },
   { name: "Category", href: "/category", icon: MapPinIcon, current: false },
+  { name: "SubCategory", href:"/subCategory", icon: MapPinIcon, current:false},
   { name: "Game", href: "/game", icon: ClipboardDocumentIcon, current: false },
   { name: "Settings", href: "/settings", icon: HandThumbUpIcon, current: false }
 ];
