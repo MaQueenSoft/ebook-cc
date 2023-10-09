@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from "react";
 import { useNavigate, Link, NavLink, Navigate } from "react-router-dom";
 import { Dialog, Menu, Transition, Combobox } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { ChevronDownIcon, TagIcon } from "@heroicons/react/20/solid";
 import { ToastContainer } from "react-toast";
 import { FiSend, FiTarget } from "react-icons/fi";
 import { RiGroupLine } from "react-icons/ri";
@@ -37,7 +37,8 @@ import {
 const Menus = [
   { name: "Dashboard", href: "/", icon: UsersIcon, current: true },
   { name: "Category", href: "/category", icon: MapPinIcon, current: false },
-  { name: "SubCategory", href:"/subCategory", icon: MapPinIcon, current:false},
+  { name: "SubCategory", href:"/subCategory", icon: TagIcon, current:false},
+  { name: "Author", href:"/author", icon: UserIcon, current:false},
   { name: "Game", href: "/game", icon: ClipboardDocumentIcon, current: false },
   { name: "Settings", href: "/settings", icon: HandThumbUpIcon, current: false }
 ];

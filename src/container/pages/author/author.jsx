@@ -4,10 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import Loading from "react-fullscreen-loading";
 import { useState } from 'react';
 import Breadcrumb from "../../../components/Breadcrumb";
-import { sub_categorySchema } from "../../../schemas";
+import { authorSchema } from "../../../schemas";
 import { uploadFile } from "../../../helper/UploadLib";
 import Table from "../../../components/tables/table";
-import { sub_category_columns } from "../../../components/tables/tableheader";
+import { author_column } from "../../../components/tables/tableheader";
 import { ChevronLeftIcon, ChevronRightIcon, TableCellsIcon, Squares2X2Icon, TrashIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
 import { Dialog, Transition } from "@headlessui/react";
 import moment from "moment";
@@ -39,18 +39,22 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-function ChildCategory() {
+function Author() {
 
   const initialValues = {
-    fk_cat_id: "",
-    subcategory_id: "",
-    sub_category_name: "",
-    sub_category_banner: "",
-    sub_category_logo: "",
-    sub_category_logo_path: "",
-    sub_category_banner_path: "",
-    sub_category_status: false
+    author_id: "",
+    author_name: "",
+    description:"",
+    author_photo: "",
+    author_photo_path: "",
+    facebook_link:"",
+    instagram_link:"",
+    twitter_link:"",
+    youtube_link:"",
+    author_status: false
   };
+
+
 
   const [isLoading, setLoader] = useState(false);
   const [SubcategoryList, setSubCategoryList] = useState([])
@@ -59,7 +63,7 @@ function ChildCategory() {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
   const [modalOpenFlage, setmodalOpenFlage] = useState(false);
-  const [subcategory_id, setCategoryId] = useState('');
+  const [author_id, setCategoryId] = useState('');
   let [formCategory, setFormCategory] = useState(initialValues);
   const [categoryLogo, setCategoryLogo] = useState(null)
   const [categoryBase64Icon, setCategoryBase64Icon] = useState(null)
@@ -68,6 +72,7 @@ function ChildCategory() {
   const [categoryBase64Banner, setCategoryBase64Banner] = useState(null)  
   const [categoryBanner, setCategoryBanner] = useState(null)
   const [enabled, setEnabled] = useState(true);
+
   
   useEffect(() => {
     document.title = "Starter-Pack | Category";
@@ -78,21 +83,21 @@ function ChildCategory() {
   const abc = 10;
 
 
-  const pages = [{ title: "SubCategory List", href: "/subCategory" }];
+  const pages = [{ title: "Author's", href: "/author" }];
 
   const handleDrawer = (type, id, obj) => {
     if (type === "edit") {
       setCategoryId(id);
       const initialValues = {
-        subcategory_id: obj.subcategory_id,
-        sub_category_name: obj.sub_category_name,
-        sub_category_logo_path: obj.sub_category_logo_path,
+        author_id: obj.author_id,
+        author_name: obj.author_name,
+        author_photo_path: obj.author_photo_path,
         sub_category_banner_path: obj.sub_category_banner_path,
-        sub_category_status: obj.sub_category_status,
+        author_status: obj.author_status,
         fk_cat_id:obj.fk_cat_id
       };
       setFormCategory(initialValues);
-      setTempLogo(obj.sub_category_logo_path);
+      setTempLogo(obj.author_photo_path);
       setTempBanner(obj.sub_category_banner_path);
     } else {
       setCategoryId(null)
@@ -122,10 +127,10 @@ function ChildCategory() {
     }
   };
 
-  const onDeleteOpen = async (subcategory_id) => {
+  const onDeleteOpen = async (author_id) => {
     let result = await confirmationLib({ Type: "Delete" });
     if (result.isConfirmed) {
-      await removeMaster({ tableName: "ebook_subcategory", pk_Id: subcategory_id });
+      await removeMaster({ tableName: "ebook_subcategory", pk_Id: author_id });
       getAllSubCategory();
     }
   };
@@ -150,24 +155,23 @@ function ChildCategory() {
   useFormik({
     enableReinitialize: true,
     initialValues: formCategory,
-    validationSchema: sub_categorySchema,
+    validationSchema: authorSchema,
     onSubmit: async (values, action) => {
 
       setLoader(true);
 
       let body = {
-        sub_category_name: values.sub_category_name,
-        sub_category_banner: categoryBanner?.name ? categoryBanner?.name : null,
-        sub_category_logo: categoryLogo?.name ? categoryLogo?.name : null,
-        sub_category_logo_path: values.sub_category_logo_path,
-        sub_category_banner_path: values.sub_category_banner_path,
-        sub_category_status: enabled,
+        author_name: values.author_name,
+        author_photo: categoryLogo?.name ? categoryLogo?.name : null,
+        author_photo_path: values.author_photo_path,
+        
+        author_status: enabled, 
         fk_cat_id:values.fk_cat_id,
       }
 
       let document_id = new Date().getTime();
 
-      if (!subcategory_id || categoryLogo || categoryBanner) {
+      if (!author_id || categoryLogo || categoryBanner) {
         let logoStorageRef;
         let bannerStorageRef;
         if (categoryLogo) {
@@ -180,7 +184,7 @@ function ChildCategory() {
             imageName: LogoImageName,
             urlName: categoryBase64Icon,
           });
-          body.sub_category_logo_path = logoStorageRef ? logoStorageRef : null;
+          body.author_photo_path = logoStorageRef ? logoStorageRef : null;
         }
         if (categoryBanner) {
           const bannerParts = categoryBanner.name.split('.');
@@ -195,17 +199,17 @@ function ChildCategory() {
         }
       }
 
-      if (subcategory_id === undefined || subcategory_id === null || subcategory_id === "") {
+      if (author_id === undefined || author_id === null || author_id === "") {
         body.document_id = document_id.toString();
-        body.subcategory_id = document_id.toString();
+        body.author_id = document_id.toString();
         body.created_date = new Date().toLocaleString() + "";
         saveCategory(body);
       } else {
         body.sub_category_banner = body.sub_category_banner_path ? body.sub_category_banner_path : body.sub_category_banner;
-        body.sub_category_logo = body.sub_category_logo_path ? body.sub_category_logo_path : body.sub_category_logo;
-        body.sub_category_status = enabled;
-        body.document_id = subcategory_id ? subcategory_id.toString() : document_id.toString();
-        body.subcategory_id = subcategory_id ? subcategory_id.toString() : document_id.toString();
+        body.author_photo = body.author_photo_path ? body.author_photo_path : body.author_photo;
+        body.author_status = enabled;
+        body.document_id = author_id ? author_id.toString() : document_id.toString();
+        body.author_id = author_id ? author_id.toString() : document_id.toString();
         body.updated_date = new Date().toLocaleString() + "";
         saveCategory(body);
       }
@@ -255,7 +259,7 @@ function ChildCategory() {
 
       {/* List View Icons */}
       <div className="table-title flex space-x-3">
-        <h5 className="text-xl font-semibold text-gray-900 mt-1">Sub-Category List ({SubcategoryList.length})</h5>
+        <h5 className="text-xl font-semibold text-gray-900 mt-1">Author's List ({SubcategoryList.length})</h5>
 
         <span className="isolate inline-flex rounded-md shadow-sm">
           <button
@@ -284,7 +288,7 @@ function ChildCategory() {
           type="button"
           className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ml-auto"
         >
-          Add Sub-Category
+          Add Author
         </Link>
       </div>
 
@@ -296,7 +300,7 @@ function ChildCategory() {
             {
               isTable ? (
                 <Table
-                  columns={sub_category_columns({ onDeleteOpen, handleDrawer })}
+                  columns={author_column({ onDeleteOpen, handleDrawer })}
                   data={SubcategoryList}
                 />
               ) : (
@@ -321,10 +325,10 @@ function ChildCategory() {
                                   alt={data?.category_name}
                                 />
                                 <CardActions >
-                                  <IconButton aria-label="Edit Category" onClick={() => handleDrawer("edit", data?.subcategory_id, data)}>
+                                  <IconButton aria-label="Edit Category" onClick={() => handleDrawer("edit", data?.author_id, data)}>
                                     <ModeEditOutlinedIcon />
                                   </IconButton>
-                                  <IconButton aria-label="Delete Category" onClick={() => {onDeleteOpen(data?.subcategory_id)}}>
+                                  <IconButton aria-label="Delete Category" onClick={() => {onDeleteOpen(data?.author_id)}}>
                                     <DeleteIcon />
                                   </IconButton>
                                 </CardActions>
@@ -368,7 +372,7 @@ function ChildCategory() {
                           <div className="bg-indigo-700 py-6 px-4 sm:px-6">
                             <div className="flex items-center justify-between">
                               <Dialog.Title className="text-lg font-medium text-white">
-                                {subcategory_id ? "Update" : "Add"} Category
+                                {author_id ? "Update" : "Add"} Category
                               </Dialog.Title>
                               <div className="ml-3 flex h-7 items-center">
                                 <button
@@ -385,9 +389,8 @@ function ChildCategory() {
                               </div>
                             </div>
                           </div>
-                          
-                          {/* category dropdown */}
 
+                          {/* Author Name */}
                           <div className="flex flex-1 flex-col justify-between">
                             <div className="divide-y divide-gray-200 px-4 sm:px-6">
                               <div className="mt-1 sm:col-span-2 sm:mt-0">
@@ -396,64 +399,29 @@ function ChildCategory() {
                                     htmlFor="project-name"
                                     className="block text-sm font-medium text-gray-900"
                                   >
-                                    Category
-                                  </label>
-                                </div>
-                                <div className="mt-1 sm:col-span-2 sm:mt-0">
-                                  <select
-                                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:max-w-xs sm:text-sm"
-                                    name="fk_cat_id"
-                                    id="fk_cat_id"
-                                    value={values.fk_cat_id}
-                                    onChange={handleChange}
-                                    onBlur={handleBlur}
-                                  >
-                                    <option> Select Category </option>
-                                    {categoryList?.length > 0 ? (categoryList?.map((category, i) => (
-                                      <option selected={category.category_id === values.fk_cat_id ? "selected" : ""} key={i} value={category.category_id}>
-                                        {category.category_name}
-                                      </option>
-                                    ))) : null}
-                                  </select>
-
-                                  {errors.fk_cat_id && touched.fk_cat_id ? (
-                                    <div className="text-sm text-red-600">{errors.fk_cat_id}</div>
-                                  ) : null}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Category Name */}
-                          <div className="flex flex-1 flex-col justify-between">
-                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
-                              <div className="mt-1 sm:col-span-2 sm:mt-0">
-                                <div>
-                                  <label
-                                    htmlFor="project-name"
-                                    className="block text-sm font-medium text-gray-900"
-                                  >
-                                    Enter Category Name
+                                    Enter Author's Name
                                   </label>
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.sub_category_name}
+                                    value={values.author_name}
                                     onChange={handleChange}
                                     onBlur={handleBlur}
                                     type="text"
-                                    placeholder="Enter Category Name"
-                                    name="sub_category_name"
+                                    placeholder="Enter Author's Name"
+                                    name="author_name"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.sub_category_name && touched.sub_category_name ? (
-                                    <p className="text-red-600 text-sm">{errors.sub_category_name}</p>
+                                  {errors.author_name && touched.author_name ? (
+                                    <p className="text-red-600 text-sm">{errors.author_name}</p>
                                   ) : null}
                                 </div>
                               </div>
                             </div>
                           </div>
+
+                          {/* author's Photo */}
                           <div className="flex flex-1 flex-col justify-between">
                             <div className="divide-y divide-gray-200 px-4 sm:px-6">
                               <div className="mt-1 sm:col-span-2 sm:mt-0">
@@ -462,25 +430,25 @@ function ChildCategory() {
                                     htmlFor="project-name"
                                     className="block text-sm font-medium text-gray-900"
                                   >
-                                    Enter Category Logo
+                                    Choose Author's Photo
                                   </label>
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.sub_category_logo}
+                                    value={values.author_photo}
                                     onChange={(e) => {
                                       handleChange(e)
                                       onFileChange(e, 'category_logo')
                                     }}
                                     onBlur={handleBlur}
                                     type="file"
-                                    placeholder="Enter Category Logo"
-                                    name="sub_category_logo"
+                                    placeholder="Enter Author's Photo"
+                                    name="author_photo"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.sub_category_logo && touched.sub_category_logo ? (
-                                    <p className="text-red-600 text-sm">{errors.sub_category_logo}</p>
+                                  {errors.author_photo && touched.author_photo ? (
+                                    <p className="text-red-600 text-sm">{errors.author_photo}</p>
                                   ) : null}
                                 </div>
                                 <div className="col-span-full">
@@ -492,6 +460,39 @@ function ChildCategory() {
                               </div>
                             </div>
                           </div>
+                          
+                        {/* discription */}
+                        <div className="flex flex-1 flex-col justify-between">
+                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                              <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <div>
+                                  <label
+                                    htmlFor="project-name"
+                                    className="block text-sm font-medium text-gray-900"
+                                  >
+                                    Enter Description
+                                  </label>
+                                </div>
+                                <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <textarea
+                                    value={values.description}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    rows={4}
+                                    name="description"
+                                    id="description"
+                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    defaultValue={''}
+                                />
+                                  {errors.description && touched.description ? (
+                                    <p className="text-red-600 text-sm">{errors.description}</p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Facebook Link */}
                           <div className="flex flex-1 flex-col justify-between">
                             <div className="divide-y divide-gray-200 px-4 sm:px-6">
                               <div className="mt-1 sm:col-span-2 sm:mt-0">
@@ -500,41 +501,125 @@ function ChildCategory() {
                                     htmlFor="project-name"
                                     className="block text-sm font-medium text-gray-900"
                                   >
-                                    Enter Category Banner
+                                    Enter Facebook Link
                                   </label>
                                 </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
                                   <input
-                                    value={values.sub_category_banner}
-                                    onChange={(e) => {
-                                      handleChange(e)
-                                      onFileChange(e, 'category_banner')
-                                    }}
+                                    value={values.facebook_link}
+                                    onChange={handleChange}
                                     onBlur={handleBlur}
-                                    type="file"
-                                    placeholder="Enter Category Banner"
-                                    name="sub_category_banner"
+                                    type="text"
+                                    placeholder="Enter Facebook Link"
+                                    name="facebook_link"
                                     autoComplete="off"
                                     className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
                                   />
-                                  {errors.sub_category_banner && touched.sub_category_banner ? (
-                                    <p className="text-red-600 text-sm">{errors.sub_category_banner}</p>
+                                  {errors.facebook_link && touched.facebook_link ? (
+                                    <p className="text-red-600 text-sm">{errors.facebook_link}</p>
                                   ) : null}
-                                </div>
-                                <div className="col-span-full">
-                                    {
-                                      tempBanner ?
-                                      <img className="shadow-sm mt-4 w-40" src={tempBanner} /> : null
-                                    }
                                 </div>
                               </div>
                             </div>
+                          </div>
 
-
-
-                            <div className="flex flex-1 flex-col justify-between">
-                              <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                        {/* Instagram Link */}
+                        <div className="flex flex-1 flex-col justify-between">
+                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                              <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <div>
+                                  <label
+                                    htmlFor="project-name"
+                                    className="block text-sm font-medium text-gray-900"
+                                  >
+                                    Enter Instagram Link
+                                  </label>
+                                </div>
                                 <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                  <input
+                                    value={values.instagram_link}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    type="text"
+                                    placeholder="Enter Instagram Link"
+                                    name="instagram_link"
+                                    autoComplete="off"
+                                    className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
+                                  />
+                                  {errors.instagram_link && touched.instagram_link ? (
+                                    <p className="text-red-600 text-sm">{errors.instagram_link}</p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        {/* Twitter Link */}
+                        <div className="flex flex-1 flex-col justify-between">
+                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                              <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <div>
+                                  <label
+                                    htmlFor="project-name"
+                                    className="block text-sm font-medium text-gray-900"
+                                  >
+                                    Enter Twitter Link
+                                  </label>
+                                </div>
+                                <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                  <input
+                                    value={values.twitter_link}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    type="text"
+                                    placeholder="Enter Twitter Link"
+                                    name="twitter_link"
+                                    autoComplete="off"
+                                    className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
+                                  />
+                                  {errors.twitter_link && touched.twitter_link ? (
+                                    <p className="text-red-600 text-sm">{errors.twitter_link}</p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        {/* Youtube Link */}
+                        <div className="flex flex-1 flex-col justify-between">
+                            <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                              <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                <div>
+                                  <label
+                                    htmlFor="project-name"
+                                    className="block text-sm font-medium text-gray-900"
+                                  >
+                                    Enter Youtube Link
+                                  </label>
+                                </div>
+                                <div className="mt-1 sm:col-span-2 sm:mt-0">
+                                  <input
+                                    value={values.youtube_link}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    type="text"
+                                    placeholder="Enter Youtube Link"
+                                    name="youtube_link"
+                                    autoComplete="off"
+                                    className="block w-full max-w-lg rounded-md border-[1px] p-2 border-gray-300 shadow-sm focus:border-[1px] focus:border-indigo-500 sm:max-w-xs sm:text-sm"
+                                  />
+                                  {errors.youtube_link && touched.youtube_link ? (
+                                    <p className="text-red-600 text-sm">{errors.youtube_link}</p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                        {/* status */}
+                        <div className="flex flex-1  flex-col justify-between">
+                              <div className="divide-y divide-gray-200 px-4 sm:px-6">
+                                <div className="mt-1 mb-4 sm:col-span-2 sm:mt-0">
                                     <Switch.Group as="div" className="flex items-center mt-3">
                                         <Switch
                                             checked={enabled}
@@ -560,11 +645,11 @@ function ChildCategory() {
                                 </div>
                             </div>
 
-
-
-
-                          </div>
                         </div>
+
+                                              
+
+                        {/* cancel button  */}
                         <div className="flex flex-shrink-0 justify-end px-4 py-4">
                           <button
                             type="button"
@@ -575,11 +660,12 @@ function ChildCategory() {
                           >
                             Cancel
                           </button>
+                          {/* submit button */}
                           <button
                             type="submit"
                             className="ml-4 inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                           >
-                            {subcategory_id ? 'Update' : 'Add'}
+                            {author_id ? 'Update' : 'Add'}
                           </button>
                         </div>
                       </form>
@@ -598,4 +684,4 @@ function ChildCategory() {
   )
 }
 
-export default ChildCategory;
+export default Author;

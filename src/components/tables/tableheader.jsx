@@ -90,6 +90,7 @@ export const category_columns = ({ onDeleteOpen, handleDrawer }) => [
   },
 ];
 
+
 export const sub_category_columns = ({ onDeleteOpen, handleDrawer }) => [
   {
     Header: "Category Name",
@@ -99,6 +100,88 @@ export const sub_category_columns = ({ onDeleteOpen, handleDrawer }) => [
   {
     Header: "Banner",
     accessor: "category_banner_path",
+    Cell: (cell) => {
+      const cellId = cell.row.original.category_id;
+      return (
+        <>
+          <img src={cell.row.original.sub_category_banner_path} width="30%" height="10%" />
+        </>
+      );
+    },
+  },
+  {
+    Header: "Logo",
+    accessor: "category_logo_path",
+    Cell: (cell) => {
+      const cellId = cell.row.original.category_id;
+      return (
+        <>
+          <img src={cell.row.original.sub_category_logo_path} width="30%" height="10%" />
+        </>
+      );
+    },
+  },
+  {
+    Header: "Status",
+    accessor: "category_status",
+    Cell: (cell) => {
+      const cellId = cell.row.original.category_id;
+      const status = cell.row.original.sub_category_status;
+      return (
+        <>
+          {
+            status ? 'Active' : 'Inactive'
+          }
+        </>
+      );
+    },
+  },
+  {
+    Header: "Action",
+    accessor: "action",
+    Cell: (cell) => {
+      const cellId = cell.row.original.subcategory_id;
+      return (
+        <>
+          <Link
+            onClick={() => handleDrawer("edit", cellId, cell.row.original)}
+            className="inline-flex px-2 ml-3 text-xs leading-5 text-indigo-600 bg-indigo-100 rounded-full"
+          >
+            <button
+              className="text-indigo-900 "
+              size="default"
+              variant="outlined"
+            >
+              Edit<span className="sr-only">, </span>
+            </button>
+          </Link>
+
+          <span className="inline-flex px-2 ml-3 text-xs leading-5 text-red-600 bg-red-100 rounded-full">
+            <button
+              onClick={() => {
+                onDeleteOpen(cellId);
+              }}
+              size="default"
+              variant="outlined"
+            >
+              Delete
+              <span className="sr-only">, </span>
+            </button>
+          </span>
+        </>
+      );
+    },
+  },
+];
+export const author_column = ({ onDeleteOpen, handleDrawer }) => [
+  {
+    Header: "Author Name",
+    accessor: (d) => capitalise(d.author_name),
+  },
+
+  {
+    Header: "Author Photo",
+    accessor: "author_photo",
     Cell: (cell) => {
       const cellId = cell.row.original.category_id;
       return (
