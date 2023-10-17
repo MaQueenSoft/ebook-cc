@@ -70,38 +70,37 @@ export const authorSchema = Yup.object({
     .max(225)
     .required("Please Enter the Author\'s  Name"),
 
-  author_photo: Yup.mixed().test('categoryLogo', 'Please Choose a Sub-Category Logo', function (value) {
-    const categoryLogoPath = this.resolve(Yup.ref('sub_category_logo_path')); // Replace with actual path field name
-    if (!categoryLogoPath && !value) {
-      return this.createError({
-        message: 'Author\'s photo is required',
-        path: 'author_photo',
-      });
-    }
-    return true;
-  }),
-
-  description: Yup.string()
-  .min(2)
-  .max(225)
-  .required("Please Enter the Description"),
+    author_photo: Yup.mixed().test('authorPhoto', 'Please Choose a Author Photo', function (value) {
+      const authorPhotoPath = this.resolve(Yup.ref('sub_category_logo_path')); // Replace with actual path field name
+      if (!authorPhotoPath && !value) {
+        return this.createError({
+          message: 'Author\'s photo is required',
+          path: 'author_photo',
+        });
+      }
+      return true;
+    }),
+    description: Yup.string()
+    .min(2)
+    .max(225)
+    .required("Please Enter the Description"),
   facebook_link: Yup.string()
-  .min(2)
-  .max(225)
-  .required("Please Enter the Facebook Link"),
+    .min(2)
+    .max(225)
+    .required("Please Enter the facebook link"),
   instagram_link: Yup.string()
-  .min(2)
-  .max(225)
-  .required("Please Enter the Instagram Link"),
-twitter_link: Yup.string()
-  .min(2)
-  .max(225)
-  .required("Please Enter the Twitter Link"),
+    .min(2)
+    .max(225)
+    .required("Please Enter the instagram link"),
+  twitter_link: Yup.string()
+    .min(2)
+    .max(225)
+    .required("Please Enter the twitter link"),
   youtube_link: Yup.string()
-  .min(2)
-  .max(225)
-  .required("Please Enter the Youtube Link"),
-
+    .min(2)
+    .max(225)
+    .required("Please Enter the youtube link"),
+  
 });
 
 export const gameSchema = Yup.object({

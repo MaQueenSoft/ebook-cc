@@ -57,7 +57,7 @@ function Author() {
 
 
   const [isLoading, setLoader] = useState(false);
-  const [SubcategoryList, setSubCategoryList] = useState([])
+  const [AuthorList, setAuthorList] = useState([])
   const [categoryList, setCategoryList] = useState([])
   const [isTable, setTable] = useState(true);
   const [loading, setLoading] = useState(true)
@@ -76,11 +76,11 @@ function Author() {
   
   useEffect(() => {
     document.title = "Starter-Pack | Category";
-    getAllSubCategory();
+    getAllAuthor();
     getAllCategory();
   }, []);
 
-  const abc = 10;
+
 
 
   const pages = [{ title: "Author's", href: "/author" }];
@@ -92,13 +92,16 @@ function Author() {
         author_id: obj.author_id,
         author_name: obj.author_name,
         author_photo_path: obj.author_photo_path,
-        sub_category_banner_path: obj.sub_category_banner_path,
+        facebook_link:obj.facebook_link,
+        instagram_link:obj.instagram_link,
+        twitter_link:obj.twitter_link,
+        youtube_link:obj.youtube_link,
         author_status: obj.author_status,
         fk_cat_id:obj.fk_cat_id
       };
       setFormCategory(initialValues);
       setTempLogo(obj.author_photo_path);
-      setTempBanner(obj.sub_category_banner_path);
+      // setTempBanner(obj.sub_category_banner_path);
     } else {
       setCategoryId(null)
       setTempLogo(null);
@@ -111,18 +114,18 @@ function Author() {
   };
 
   const getAllCategory = async () => {
-    let querySnapshot = await getAllMaster({ tableName: "ebook_categories" });
+    let querySnapshot = await getAllMaster({ tableName: "ebook_author" });
     if (querySnapshot.length > 0) {
       setCategoryList(querySnapshot);
       setLoading(false);
     }
   };
 
-  const getAllSubCategory = async () => {
-    //setSubCategoryList([]);
-    let querySnapshot = await getAllMaster({ tableName: "ebook_subcategory" });
+  const getAllAuthor = async () => {
+    //setAuthorList([]);
+    let querySnapshot = await getAllMaster({ tableName: "ebook_author" });
     if (querySnapshot.length > 0) {
-      setSubCategoryList(querySnapshot);
+      setAuthorList(querySnapshot);
       setLoading(false);
     }
   };
@@ -130,8 +133,8 @@ function Author() {
   const onDeleteOpen = async (author_id) => {
     let result = await confirmationLib({ Type: "Delete" });
     if (result.isConfirmed) {
-      await removeMaster({ tableName: "ebook_subcategory", pk_Id: author_id });
-      getAllSubCategory();
+      await removeMaster({ tableName: "ebook_author", pk_Id: author_id });
+      getAllAuthor();
     }
   };
 
@@ -146,7 +149,7 @@ function Author() {
   }
   const saveCategory = async (body) => {
     let docRef = await insertMaster({
-      tableName: "ebook_subcategory",
+      tableName: "ebook_author",
       tableItem: body,
     });
   };
@@ -161,10 +164,14 @@ function Author() {
       setLoader(true);
 
       let body = {
+        author_id: values.author_id,
         author_name: values.author_name,
         author_photo: categoryLogo?.name ? categoryLogo?.name : null,
         author_photo_path: values.author_photo_path,
-        
+       facebook_link:values.facebook_link,
+        instagram_link:values.instagram_link,
+        twitter_link:values.twitter_link,
+        youtube_link:values.youtube_link,     
         author_status: enabled, 
         fk_cat_id:values.fk_cat_id,
       }
@@ -180,7 +187,7 @@ function Author() {
           const lastLogoExtension = logoParts[logoParts.length - 1];
           let LogoImageName = document_id + "_logo." + lastLogoExtension;
           logoStorageRef = await uploadFile({
-            folderName: "subCategory",
+            folderName: "author",
             imageName: LogoImageName,
             urlName: categoryBase64Icon,
           });
@@ -205,7 +212,6 @@ function Author() {
         body.created_date = new Date().toLocaleString() + "";
         saveCategory(body);
       } else {
-        body.sub_category_banner = body.sub_category_banner_path ? body.sub_category_banner_path : body.sub_category_banner;
         body.author_photo = body.author_photo_path ? body.author_photo_path : body.author_photo;
         body.author_status = enabled;
         body.document_id = author_id ? author_id.toString() : document_id.toString();
@@ -217,13 +223,13 @@ function Author() {
       action.resetForm();
 
       if (modalOpenFlage === true) {
-        getAllSubCategory();
+        getAllAuthor();
         setmodalOpenFlage(false);
         setLoader(false);
       };
 
-      getAllSubCategory();
-      navigate("/subCategory");
+      getAllAuthor();
+      navigate("/author");
     }
   });
   const onFileChange = (e, type) => {
@@ -259,7 +265,7 @@ function Author() {
 
       {/* List View Icons */}
       <div className="table-title flex space-x-3">
-        <h5 className="text-xl font-semibold text-gray-900 mt-1">Author's List ({SubcategoryList.length})</h5>
+        <h5 className="text-xl font-semibold text-gray-900 mt-1">Author's List ({AuthorList.length})</h5>
 
         <span className="isolate inline-flex rounded-md shadow-sm">
           <button
@@ -301,13 +307,13 @@ function Author() {
               isTable ? (
                 <Table
                   columns={author_column({ onDeleteOpen, handleDrawer })}
-                  data={SubcategoryList}
+                  data={AuthorList}
                 />
               ) : (
                 <Box className='mt-1 p-3'>
                   <Grid container spacing={{ xs: 3 }}>
                     {
-                      SubcategoryList.map((data, index) => (
+                      AuthorList.map((data, index) => (
                         <Grid key={index} item lg={3} md={3} sm={12} xs={12}>
                             <Box className='mt-0'>
                               <Card sx={{ maxWidth: 345 }} className="rounded-lg">
